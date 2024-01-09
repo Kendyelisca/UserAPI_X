@@ -1,26 +1,41 @@
-const express = require('express');
-const helmet = require('helmet');
-const cors = require('cors');
-const router = require('./routes');
-const errorHandler = require('./utils/errorHandler');
-require('dotenv').config();
+const express = require("express");
+const helmet = require("helmet");
+const cors = require("cors");
+const session = require("express-session");
+const passport = require("passport");
+const router = require("./routes");
+const errorHandler = require("./utils/errorHandler");
+require("dotenv").config();
 
-// Esta es nuestra aplicación
 const app = express();
 
-// Middlewares 
+// Middlewares
 app.use(express.json());
-app.use(helmet({
+app.use(
+  helmet({
     crossOriginResourcePolicy: false,
-}));
+  })
+);
 app.use(cors());
 
-app.use(router);
-app.get('/', (req, res) => {
-    return res.send("Welcome to express!");
-})
+// express-session middleware
+app.use(
+  session({
+    secret: process.env.TOKEN_SECRET,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
-// middlewares después de las rutas
-app.use(errorHandler)
+// Initialize passport after setting up the session middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(router);
+app.get("/", (req, res) => {
+  return res.send("Welcome to express!");
+});
+
+app.use(errorHandler);
 
 module.exports = app;
